@@ -839,10 +839,7 @@ class Basic(AssumeMeths):
         """
         def search(expr, test):
             if not isinstance(expr, Basic):
-                try:
-                    return any(search(i, test) for i in expr)
-                except TypeError:
-                    return False
+                return False
             elif test(expr):
                 return True
             else:

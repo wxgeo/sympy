@@ -41,6 +41,30 @@ class Tuple(Basic):
     def __iter__(self):
         return iter(self.args)
 
+    def __add__(self, other):
+        if isinstance(other, tuple):
+            return Tuple(*(self.args + other))
+        return NotImplemented
+
+    def __radd__(self, other):
+        if isinstance(other, tuple):
+            return Tuple(*(other + self.args))
+        elif isinstance(other, Tuple):
+            return Tuple(*(other.args + self.args))
+        else:
+            return NotImplemented
+
+    def __eq__(self, other):
+        if isinstance(other, Basic):
+            return super(Tuple, self).__eq__(other)
+        return self.args == other
+
+    def __hash__(self):
+        h = self._mhash
+        if h is not None:
+            return h
+        return hash(self.args)
+
 
 def tuple_wrapper(method):
     """

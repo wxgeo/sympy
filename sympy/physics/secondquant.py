@@ -13,7 +13,6 @@ from sympy import (
 from sympy.utilities import iff
 from sympy.core.sympify import sympify
 from sympy.core.cache import cacheit
-from sympy.core.symbol import Dummy
 from sympy.printing.str import StrPrinter
 
 __all__ = [
@@ -1107,8 +1106,8 @@ class FockState(Expr):
           Element 0 is the state that was occupied first, element i
           is the i'th occupied state.
         """
-        o = map(sympify, occupations)
-        obj = Basic.__new__(cls, tuple(o), commutative=False)
+        occupations = map(sympify, occupations)
+        obj = Basic.__new__(cls, Tuple(*occupations), commutative=False)
         return obj
 
     def _eval_subs(self, old, new):
