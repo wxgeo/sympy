@@ -1068,49 +1068,57 @@ def count_ops(expr, visual=None):
         how = None
     else:
         how = True
-    if isinstance(expr, Expr):
 
+    if isinstance(expr, Expr):
         ops = []
         args = [expr]
-        MUL = C.Symbol('Mul')
+        ADD = C.Symbol('ADD')
+        SUB = C.Symbol('SUB')
+        NEG = C.Symbol('NEG')
+        DIV = C.Symbol('DIV')
         while args:
             a = args.pop()
             if a.is_Rational:
                 #-1/3 = -1*3**-1 -> Mul + Pow + Mul
                 if a is not S.One:
                     if a.p < 0:
-                        ops.append(MUL)
+                        ops.append(NEG)
                     if a.q != 1:
-                        ops.append(MUL)
+                        ops.append(DIV)
                     continue
             elif a.is_Mul:
                 if a.args[0] is S.NegativeOne:
-                    ops.append(MUL)
+                    ops.append(NEG)
                     a = a.as_two_terms()[1]
                 n, d = fraction(a)
+                if d is not S.One:
+                    ops.append(DIV)
                 if n.is_Integer:
-                    ops.append(MUL)
                     if n < 0:
-                        ops.append(MUL)
+                        ops.append(NEG)
                     a = d # won't be -Mul
                 elif d is not S.One:
                     if not d.is_Integer:
                         args.append(d)
-                    ops.append(MUL)
                     args.append(n)
                     continue # could be -Mul
+            if a.is_Add:
+                for val in a.args[1:]:
+                    if (val.is_Rational and val.p < 0
+                            or val.args and val.args[0].is_Rational
+                                         and val.args[0].p < 0):
+                        ops.append(SUB - NEG - ADD)
             if a.is_Pow and a.exp is S.NegativeOne:
-                ops.append(MUL)
+                ops.append(DIV)
                 a = a.base # won't be -Mul
-            if (
-            a.is_Add or
-            a.is_Mul or
-            a.is_Pow or
-            a.is_Function or
-            isinstance(a, Derivative) or
-            isinstance(a, C.Integral)):
+            if (a.is_Add or
+                a.is_Mul or
+                a.is_Pow or
+                a.is_Function or
+                isinstance(a, Derivative) or
+                isinstance(a, C.Integral)):
 
-                o = C.Symbol(a.func.__name__)
+                o = C.Symbol(a.func.__name__.upper())
                 # count the args
                 if (a.is_Add or
                     a.is_Mul or
